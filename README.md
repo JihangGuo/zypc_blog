@@ -1,11 +1,11 @@
 # zypc_blog
 
 
-##使用框架及组件
+## 使用框架及组件
 1. express
 2. PM2: 日志，启动，热监听node文件
 
-##使用模块
+## 使用模块
 1.  body-parse: 解析http中的各项数据
 2.  cookie-parser: 解析cookie工具
 > 3. formidable : 专用于处理表单上传，功能强大
@@ -17,7 +17,7 @@
 4. crypto加密模块
 5. cors跨域请求模块（非简单请求时使用，可全局可局部）
 
-##开发备注
+## 开发备注
 1. 使用了node + express + mongodb + vue + vue-cli + webpack + element-ui + vuex + vue-resource(与后台进行服务连接)
 2. 使用过程：全局安装node与vue-cli，使用vue-cli脚手架搭建项目结构
 3. 注意点：vue与element-ui结合——————vue-router与node结合（路由接口作用）——————vue-cli与webpack结合————node与mongodb结合
@@ -29,7 +29,7 @@
 
 6. 现阶段对mongodb使用的看法：能够一次性获取用户的全部数据，对于用户的某个内容不用再去单独建立连接获取，在单页应用中具有很大的优势
 
-##upload
+## upload
 1.  根据mongo数据库内置id来表示唯一数据
 2. 部分插件使用了localstroge来进行存储检查标记，待改善
 3.  edit栏目改进(支持本地上传上传图片以及自动保存)
@@ -40,7 +40,7 @@
 8. 实现数据都从vuex里拿取
 
 9. 自己实现了一个emoji表情选择的全套解决方案（emojione）
-##遇到的問題
+## 遇到的問題
 1. 關於ajax跨域
 2. 關於外部js與css引入
 3. 關於與服務器端通信
