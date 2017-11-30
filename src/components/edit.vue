@@ -165,12 +165,12 @@ export default {
     },
     check_blog() {
       this.$http
-        .post("http://localhost:8000/api/check_blog", {
-          check_blog: JSON.stringify({
+        .post("http://localhost:8000/api/check_blog",
+          JSON.stringify({
             check_title: this.gettitle,
             user_id: this.$store.state.log_id
           })
-        })
+      )
         .then(
           response => {
             var get_flag = JSON.parse(response.bodyText);

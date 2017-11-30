@@ -61,18 +61,13 @@ export default {
         }
     },
     mounted(){
-
-          //加载全部文档 后期对上面的获取进行优化
+          //加载全部用户信息
     this.$http
-      .post("http://localhost:8000/api/get_all", {
-        message: JSON.stringify({
-          user_id: this.$store.state.log_id
-        })
-      })
+      .post("http://localhost:8000/api/get_all",JSON.stringify({user_id: this.$store.state.log_id}))
       .then(
         response => {
           var get_document = JSON.parse(response.bodyText);
-          this.$store.commit("swith_all", get_document.res_result);
+          this.$store.commit("swith_all", get_document);
          this.pic_style.background = "url("+this.$store.state.alldocument.user_pic+")";
        },
         response => {
