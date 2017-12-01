@@ -39,20 +39,22 @@ export default {
   methods: {
     get_tabs() {
       //初始化文章请求日期
-      var res_document = [];
-      var get_blog = this.$store.state.alldocument.blog_text;
-      var the_date = this.date_value.split("-");
-      var req_date = the_date[0] + the_date[1];
-      for (var a = 0; a < get_blog.length; a++) {
-        //初始化数据库文章日期
-        var db_date = get_blog[a].date.split("-");
-        var res_date = db_date[0] + db_date[1];
-        if (res_date == req_date && get_blog[a].show_status!==3) {
-          res_document.push(get_blog[a]);
-        }
-      }
-      this.$store.commit("swith_document", res_document);
-      this.$router.push("/admin/alldocument/the_tags");
+       this.$http
+      .post("http://localhost:8000/api/get_document",JSON.stringify(
+        {
+          get_type:"date",
+          user_id: this.$store.state.log_id,
+          month:this.date_value
+          }
+        ))
+      .then(response=>{
+        var res_document = JSON.parse(response.bodyText);
+        this.$store.commit("swith_document", res_document);
+        this.$router.push("/admin/alldocument/the_tags");
+      },response=>{
+        alert("網絡錯誤");
+      })
+      
     }
   },
   mounted() {

@@ -73,6 +73,22 @@ function getsha1(str, secret) {
   return mistr;
 }
 
+//时间戳格式转换
+function date_parse(type,value) {
+  if (type == "get_stamp") {
+    //前端字符转时间戳 格式为 2017-11-11 11:11:11
+    return new Date().getTime();
+  } else if (type=="parse_stamp") {
+    return new Date(value).getTime();
+  }else if (type == "get_more") {
+    //时间戳转详细格式 2017-11-11 11:11:11
+    return new Date(value).toLocalString();
+  } else if (type=="get_less") {
+    //时间戳转大概格式 2017-11-11
+    return new Date(value).toLocalString().replace(/\d{1,2}:\d{1,2}:\d{1,2}$/,'');
+  }
+}
+
 
 //注册检测重名判断
 app.post('/api/check_name', getjson, function (req, res) {
@@ -192,51 +208,26 @@ app.post('/api/signin', function (req, res) {
 
 //登录
 app.post('/api/login', function (req, res) {
-  var form = new formidable.IncomingForm();//formidable通过IncomingForm示例来对表单进行单元控制
-  form.encoding = 'utf-8',
-    form.parse(req, function (err, fields, files) {
-      if (check_form("name", fields.name)) {
-        var find_user = {
-          name: fields.name,
-          password: fields.password,
-        }
-        //进行数据库查询
-        MongoClient.connect(DB_STR, function (err, db) {
-          db.collection("user").findOne({ "user_name": find_user.name }, function (err, result) {
-            if (result == null) {
-              //无账号
-              var send_flag = {
-                flag: 0
-              }
-              res.send(JSON.stringify(send_flag));
-            } else {
-              if (find_user.password == result.user_password) {
-                //密码正确，跳转到个人主页
-                var send_flag = {
-                  log_name: find_user.name,
-                  log_id: result._id,
-                  flag: 1
-                };
-                res.send(JSON.stringify(send_flag));
-              } else {
-                //密码错误
-                var send_flag = {
-                  flag: 0
-                }
-                res.send(JSON.stringify(send_flag));
-              }
-            }
-          })
-        })
-      } else {
+  MongoClient.connect(DB_STR, function (err, db) {
+    var form = new formidable.IncomingForm();//formidable通过IncomingForm示例来对表单进行单元控制
+    form.encoding = 'utf-8';
+    
+    var get_name = form.parse(req, async function (err, fields, files) {
+      var check_user = await db.collection("user").count({ "user_name": fields.name,"user_password":fields.password });
+      if (check_user == 1) {
+        var get_info = await db.collection("user").find({ "user_name": fields.name }).toArray();
         var send_flag = {
-          flag: 0
-        }
-        res.send(JSON.stringify(send_flag));
+          log_name: get_info[0].user_name,
+          log_id: get_info[0]._id,
+          flag: 1
+        };
+        res.send(JSON.stringify(send_flag))
+      } else {
+        res.send(JSON.stringify({flag:0}));
       }
-
-    })
-});
+    });
+  });    
+});  
 
 
 //编辑接口
@@ -269,12 +260,21 @@ app.post('/api/edit', getjson, function (req, res) {
         console.log("新建");
         //设置objectid
         var new_id = uuid();
+        //创建一个时间对象 方便查询
+        var reset_date = new Date();
+        var get_date = {
+          year: reset_date.getFullYear(),
+          month: reset_date.getMonth()+1,
+          day: reset_date.getDate(),
+          hours: reset_date.getHours(),
+          minutes: reset_date.getMinutes(),
+          secs: reset_date.getSeconds()
+        };
         var creat_bloginuser = await db.collection("user").update({ "_id": ObjectId(blog.user_id) }, {
           "$push": {
             "blog_text": new_id
           }
         });
-        var get_date = new Date(new Date().getTime() + 28800000);
         var creat_blog = await db.collection("blog_text").insert(
           {
             blog_id: new_id,
@@ -334,7 +334,7 @@ app.post('/api/edit', getjson, function (req, res) {
 app.post('/api/get_all', getjson, function (req, res) {
   var get_id = req.body.user_id;
   MongoClient.connect(DB_STR, function (err, db) {
-    db.collection("user").find({ "_id": ObjectId(get_id) }, { "user_password": 0 }).toArray(function (err, result) {
+    db.collection("user").find({ "_id": ObjectId(get_id) }, { "user_password": 0 ,"blog_text":0,"tags":0}).toArray(function (err, result) {
       //用户信息传递
       res.send(JSON.stringify(result[0]));
     });
@@ -350,6 +350,7 @@ app.post('/api/get_document', getjson, function (req, res) {
   var tags = req.body.tags;
   var star = req.body.star;
   var single = req.body.single;
+  var user_id = req.body.user_id;
   MongoClient.connect(DB_STR, function (err, db) {
     var connect_db = async () => {
       if (get_type == "one") {
@@ -358,24 +359,29 @@ app.post('/api/get_document', getjson, function (req, res) {
         res.send(JSON.stringify(get_one[0].blog_text));
   } else if (get_type == "date") {
   //月份获取
-      var get_month = await db.collection("blog_text").find({ "date": blog_id }).toArray();
-      res.send(JSON.stringify(get_month[0].blog_text));
+        //日期按照年月日来进行分割      
+        var parse_date = month.split('-');
+        var get_blog = await db.collection("user").find({ "_id": ObjectId(user_id) }, { "blog_text": 1, "_id": 0 }).toArray();
+         var get_month = await db.collection("blog_text").find({ "date.year": Number(parse_date[0]), "date.month": Number(parse_date[1]), "blog_id": { "$in": get_blog[0].blog_text } }, { "_id": 0 }).toArray();
+        res.send(JSON.stringify(get_month));
   } else if (get_type == "tags") {
     //标签类型获取
-      var get_tags = await db.collection("blog_text").find({ "tags": tags }).toArray();
-      res.send(JSON.stringify(get_tags[0].blog_text));
+        var get_blog = await db.collection("user").find({ "_id": ObjectId(user_id) }, { "_id": 0, "blog_text": 1 }).toArray();    
+        var get_tags = await db.collection("blog_text").find({ "blog_id": { "$in": get_blog[0].blog_text }, "tags": tags }, {"_id":0}).toArray();
+      res.send(JSON.stringify(get_tags));
   } else if (get_type == "draft") {
     //垃圾箱获取
-        var get_draft = await db.collection("blog_text").find({ "show_status": 3 }).toArray();
-        res.send(JSON.stringify(get_draft[0].blog_text));
+        var get_user = await db.collection("user").find({"_id":ObjectId(user_id)}).toArray();
+        var get_draft = await db.collection("blog_text").find({ "blog_id": { "$in": get_user[0].blog_id }, "show_status": 3 }, {"_id":0}).toArray();
+        res.send(JSON.stringify(get_draft));
   } else if (get_type == "star") {
     //收藏获取
-        var get_star = await db.collection("blog_text").find({ "blog_id": { "$in": star } }).toArray();
-        res.send(JSON.stringify(get_star[0].blog_text));    
+        var get_star = await db.collection("blog_text").find({ "blog_id": { "$in": star } }, {"_id":0}).toArray();
+        res.send(JSON.stringify(get_star));    
   } else if (get_type == "single") {
     //用户获取全部
-        var get_single = await db.collection("blog_text").find({ "blog_id": {"$in": single} }).toArray();
-        res.send(JSON.stringify(get_single[0].blog_text));    
+        var get_single = await db.collection("blog_text").find({ "blog_id": { "$in": single } }, {"_id":0}).toArray();
+        res.send(JSON.stringify(get_single));    
   }
     }
     connect_db();
@@ -493,6 +499,7 @@ app.post('/api/star_blog', getjson, function (req, res) {
   var user_id = req.body.user_id;
   var blog_id = req.body.blog_id;
   var type = req.body.type;
+  var get_star = req.body.get_star;
 
   MongoClient.connect(DB_STR, function (err, db) {
     var connect_db = async () => {
@@ -500,6 +507,7 @@ app.post('/api/star_blog', getjson, function (req, res) {
         //收藏
         //保存与检测并行
         var check_star = await db.collection("user").count({ "_id": ObjectId(user_id), "star_blog": blog_id });
+        console.log(check_star)
         if (check_star == 0) {
           var star_blog = await db.collection("user").update({ "_id": ObjectId(user_id) }, {
             "$push": {
@@ -508,10 +516,8 @@ app.post('/api/star_blog', getjson, function (req, res) {
           });
           var res_star = await db.collection("user").find({ "_id": ObjectId(user_id) }, { "star_blog": 1, "_id": 0 }).toArray();
           var get_blog = await db.collection("blog_text").find({ "blog_id": { "$in": res_star[0].star_blog } }).toArray();
-
           var send = {
             flag: 1,
-            star_blog: get_blog
           }
           res.send(JSON.stringify(send));
         } else {
@@ -520,7 +526,6 @@ app.post('/api/star_blog', getjson, function (req, res) {
 
       } else if (type == 2) {
         //取消收藏
-
         var cancel_star = await db.collection("user").update({ "_id": ObjectId(user_id) }, {
           "$pull": {
             "star_blog": blog_id
@@ -528,14 +533,12 @@ app.post('/api/star_blog', getjson, function (req, res) {
         });
         var send = {
           flag: 1,
-          star_blog: blog_id
         };
         res.send(JSON.stringify(send));
 
       } else if (type == 3) {
         //获取所有收藏文章内容
-        var get_star = await db.collection("user").find({ "_id": ObjectId(user_id) }, { "star_blog": 1, "_id": 0 }).toArray();
-        var find_blog = await db.collection("blog_text").find({ "blog_id": { "$in": get_star[0].star_blog } }).toArray();
+        var find_blog = await db.collection("blog_text").find({ "blog_id": { "$in": get_star } }).toArray();
         res.send(JSON.stringify(find_blog));
       } else if (type == 4) {
         //拿出垃圾箱
@@ -546,11 +549,10 @@ app.post('/api/star_blog', getjson, function (req, res) {
         });
         var send = {
           flag: 1,
-          draft_blog: blog_id
         }
         res.send(JSON.stringify(send));
       } else {
-        res.send('{"flag":0}');
+        res.send('{"flag":00}');
       }
     }
     connect_db();
@@ -569,20 +571,31 @@ app.post('/api/talk', getjson, function (req, res) {
   //获取评论人信息用
 
   var get_blog = req.body.get_blog;
-  var get_date = new Date(new Date().getTime() + 28800000);
+  var reset_date = new Date();
+  var get_date = {
+    year: reset_date.getFullYear(),
+    month: reset_date.getMonth()+1,
+    day: reset_date.getDate(),
+    hours: reset_date.getHours(),
+    minutes: reset_date.getMinutes(),
+    secs: reset_date.getSeconds()
+  };
   MongoClient.connect(DB_STR, function (err, db) {
     var connect_db = async () => {
       if (type == 0) {
         //发表评论
+        if (talk_withwho.length==0) {
+          talk_withwho = false;
+        }
         var creat_talk = {
           talk_id: uuid(),
           blog_id: blog_id,
           talk_user: user_id,
           talk_text: text,
           talk_date: get_date,
-          talk_withwho: []
+          talk_withwho: talk_withwho,
         }
-        var creat_talk = await db.collection("blog_text").update({ "blog_id": blog_id }, {
+        var add_talk = await db.collection("blog_text").update({ "blog_id": blog_id }, {
           "$push": {
             "talk": creat_talk
           }
@@ -590,43 +603,37 @@ app.post('/api/talk', getjson, function (req, res) {
         //根据评论获取相关信息
         res.send(JSON.stringify(creat_talk));
       } else if (type == 1) {
-        //发表评论的评论
-      } else if (type == 2) {
+        //获取评论
+        var req_talk = await db.collection("blog_text").find({ "blog_id": blog_id }, { "talk": 1, "_id": 0 }).toArray();
+        //获取所有评论人员信息
+        var get_result = [];
+        for (var i = 0; i < req_talk.length; i++)
+        {
+          var get_info = await db.collection("user").find({ "_id": ObjectId(req_talk[i].talk[0].talk_user) }, { "_id": 0, "user_name": 1, "user_pic": 1 }).toArray();
+          
+          get_result.push({
+            blog_id: req_talk[i].talk[0].blog_id,
+            talk_date: req_talk[i].talk[0].talk_date,
+            talk_id: req_talk[i].talk[0].talk_id,
+            talk_text: req_talk[i].talk[0].talk_text,
+            talk_name:get_info[0].user_name,
+              talk_pic:get_info[0].user_pic,
+            talk_withwho: req_talk[i].talk[0].talk_withwho,
+          });
+        }  
+        res.send(JSON.stringify(get_result));
+      }else if (type == 2) {
         //博主删除评论
         var del_talk = await db.collection("blog_text").update({ "talk.talk_id": talk_id }, {
           "$pull": {
-            "talk.$": {
+            "talk": {
               "talk_id": talk_id
             }
           }
         });
         res.send(JSON.stringify(1));
 
-      } else if (type == 3) {
-        //获取评论
-        var req_talk = await db.collection("blog_text").find({ "blog_id": blog_id }, { "talk": 1, "_id": 0 }).toArray();
-        res.send(JSON.stringify(req_talk[0]));
-      } else if (type == 4) {
-        //回复评论
-        var with_id = uuid();
-        var res_talk = await db.collection("blog_text").update({ "talk.talk_id": talk_id }, {
-          "$push": {
-            "talk.$.talk_with": {
-              with_id: with_id,
-              talk_text: text,
-              talk_date: get_date,
-              user_id: user_id,
-              with_who: talk_withwho
-            }
-          }
-        });
-        var get_res = {
-          type: 1,
-          with_id: with_id,
-          talk_date: get_date,
-        }
-        res.send(JSON.stringify(get_res));
-      }
+      } 
     }
     connect_db();
   })

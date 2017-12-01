@@ -247,19 +247,10 @@ export default {
                 //修改檢測狀態 新的
                 this.check_title = false;
                 this.dialogVisible = true;
-                this.$store.commit("set_document", {
-                  type: "add",
-                  value: get_flag.res_blog
-                });
               } else if (get_flag.flag == 2) {
                 //修改檢測狀態 修改的
                 this.check_title = true;
                 this.dialogVisible = true;
-                this.$store.commit("set_document", {
-                  type: "edit",
-                  value: blog,
-                  index: get_flag.blog_id
-                });
               } else {
                 this.check_title = false;
               }
@@ -348,7 +339,6 @@ export default {
         alert("获取失败");
       })
    
-
     //组件加载完毕后执行判断
     if (this.$store.state.go_edit) {
       var get_index = this.$store.state.go_index;
@@ -362,7 +352,7 @@ export default {
       this.blog_status = true;
       this.check_title = true;
     }
-    if(this.$store.state.blog_text[get_index].show_status==1){
+    if(this.$store.state.show_document[get_index].show_status==1){
       this.show_status = true;
     }
   }

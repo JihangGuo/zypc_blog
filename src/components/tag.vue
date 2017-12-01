@@ -76,15 +76,6 @@ export default {
                     type: "success",
                     message: "删除成功!"
                   });
-                  //对本地标签进行更新与文章进行更新
-                  this.$store.commit("swith_tags", {
-                    type: "del",
-                    value: tag
-                  });
-               this.$store.commit("set_document", {
-                    type: "updata",
-                    value: get.blog_text
-                  });
                 } else {
                   alert("删除失败");
                 }
@@ -131,10 +122,6 @@ export default {
                 this.dynamicTags.push(inputValue);
               }
               
-              this.$store.commit("swith_tags", {
-                type: "add",
-                value: inputValue
-              });
             } else {
               this.$message({
                 type: "warning",
@@ -152,21 +139,22 @@ export default {
 
     go_tags(tag) {
       //进行标签文章筛选 本来想使用js contains方法(判断一个元素是否包含另一个元素) 但是firefox不支持 gg
-      var get_blog = this.$store.state.alldocument.blog_text;
-      var res_document = [];      
-      for (var i = 0; i < get_blog.length; i++) {
-          for (var a = 0; a < get_blog[i].tags.length; a++) 
-          {
-            
-           
-            if (get_blog[i].tags[a] == tag && get_blog[i].show_status!==3) {
-               
-            res_document.push(get_blog[i]);
-          }
-          }
-      }
-      this.$store.commit("swith_document", res_document);
-      this.$router.push("/admin/tag/the_tags/");
+       this.$http
+      .post("http://localhost:8000/api/get_document", {
+        user_id:this.$store.state.log_id,
+        get_type: "tags",
+        tags:tag
+      })
+      .then(
+        response => {
+          var get_blog = JSON.parse(response.bodyText);
+            this.$store.commit("swith_document", get_blog);
+            this.$router.push("/admin/tag/the_tags/");
+        },
+        response => {
+          alert("获取错误");
+        }
+      );
     }
   },
   mounted() {
@@ -180,10 +168,6 @@ export default {
         response => {
           var get_flag = JSON.parse(response.bodyText);
           this.dynamicTags = get_flag;
-          this.$store.commit("swith_tags", {
-            type: "reget",
-            value: get_flag
-          });
         },
         response => {
           alert("获取用户标签错误");

@@ -13,15 +13,20 @@
 export default {
     mounted(){
      //将目前的草稿文章放入活动文档
-     var all_blog = this.$store.state.alldocument.blog_text;
-     var res = [];
-     for (var i=0;i<all_blog.length;i++)
-     {
-         if( all_blog[i].show_status==3){
-             res.push(all_blog[i]);
+     this.$http.post("http://localhost:8000/api/get_document",JSON.stringify({
+         get_type:"draft",
+         user_id:this.$store.state.log_id
+     })).then(
+         response=>{
+             var res_blog = JSON.parse(response.bodyText)
+             this.$store.commit('swith_document',res_blog);   
+         },
+         response=>{
+             alert("網絡連接錯誤");
          }
-     }
-    this.$store.commit('swith_document',res);   
+     );
+     
+    
 }
 }
 </script>

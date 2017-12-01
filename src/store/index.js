@@ -11,8 +11,8 @@ export default new vuex.Store({
         alldocument: [],
         show_document:[],
         go_edit: false,
-        go_index: "",
-        star_blog:""
+        go_index: ""
+       
     },
     mutations: {
         swith_login(state, info) {
@@ -33,7 +33,7 @@ export default new vuex.Store({
                 state.alldocument = info;
             }
         },
-        set_edit(state,info) {
+        set_edit(state, info) {
             state.go_edit = info.go_edit;
             state.go_index = info.go_index;
         },
@@ -44,63 +44,23 @@ export default new vuex.Store({
                 state.show_document = info;
             }
         },
-        set_document(state,info) {
-            if (info.type == "add") {
-                state.alldocument.blog_text.push(info.value);
-            } else if (info.type == "edit") {
-                for (var i = 0; i < state.alldocument.blog_text.length; i++)
-                {
-                    if (info.index == state.alldocument.blog_text[i].blog_id)
-                    {
-                        state.alldocument.blog_text[i] = info.value;
-                    }    
-                }    
-                
-            } else if (info.type == "del") {
-                alert("还未构建");
-            } else if (info.type == "del_draft") {
-                for (var i = 0; i < state.alldocument.blog_text.length; i++)
-                {
-                    if (info.value == state.alldocument.blog_text[i].blog_id)
-                    {
-                        state.alldocument.blog_text[i].show_status = 1;
-                    }    
-                }    
-            } else if (info.type == "updata") {
-                state.alldocument.blog_text = info.value;
-            }
-        },
-        
-        swith_tags(state, info) {
-            if (info.type == "reget") {
-                state.alldocument.tags = info.value;
-            } else if (info.type == "add") {
-                console.log(state.alldocument.tags);
-                //state.alldocument.tags.push(info.value);
-                console.log(state.alldocument.tags);
-            } else if (info.type == "del") {
-                for (var i = 0; i < state.alldocument.tags.length; i++)
-                {
-                    if (state.alldocument.tags[i] == info.value)
-                    {
-                         state.alldocument.tags.splice(i,1);
-                    }    
-                }    
-               
-            }else{}
-        },
         change_info(state, info) {
             //改变当前用户登录信息同级别的信息
-            if (info.type == "user_pic")
-            {
+            if (info.type == "user_pic") {
                  state.alldocument.user_pic = info.value;
-            } else if (info.type =="add_star"){
-                state.star_blog = info.value;
+            } else if (info.type == "change_some") {
+                state.log_name = info.change.user_name;
+                state.alldocument.user_name = info.change.user_name;
+                state.alldocument.email = info.change.email;
+                state.alldocument.blog_name = info.change.blog_name;
+                state.alldocument.blog_intro = info.change.blog_intro;
+            } else if (info.type == "add_star") {
+                state.alldocument.star_blog.push(info.value);
             } else if (info.type == "del_star") {
-                for (var i = 0; i < state.star_blog.length; i++)
+                for (var i = 0; i < state.alldocument.star_blog.length; i++)
                 {
-                    if (state.star_blog[i] == info.value) {
-                        state.star_blog.splice(i, 1);   
+                    if (state.alldocument.star_blog[i] == info.value) {
+                        state.alldocument.star_blog.splice(i, 1);
                     }
                 }    
             }

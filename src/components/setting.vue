@@ -349,6 +349,15 @@ var send_info = {
             .then(
               response => {
                 var get_document = JSON.parse(response.bodyText);
+                this.$store.commit("change_info",{
+                  type:"change_some",
+                  change:{
+                     user_name: sendinfo.user_name,
+                     email: sendinfo.email,
+                     blog_name: sendinfo.blog_name,
+                      blog_intro: sendinfo.blog_intro
+                  }
+                });
                 this.$message({
                   message: "修改成功",
                   type: "success"

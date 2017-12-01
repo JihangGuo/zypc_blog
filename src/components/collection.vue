@@ -20,7 +20,7 @@ export default {
      //将目前的收藏文章放入活动文档 因为牵扯到整个数据库 需要从远程重新获取
      var send = {
          type:3,
-         user_id:this.$store.state.log_id,
+         get_star:this.$store.state.alldocument.star_blog,
      }
     this.$http.post("http://localhost:8000/api/star_blog"
     ,JSON.stringify(send))

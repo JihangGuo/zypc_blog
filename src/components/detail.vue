@@ -40,7 +40,6 @@ export default {
         }
     },
     methods: {
-       
         go_edit(){
             this.$store.commit("set_edit",{go_edit:this.blog_id,go_index:this.index_id});
             this.$router.push("/admin/edit");
@@ -56,11 +55,12 @@ export default {
                 var res = JSON.parse(response.bodyText);
             if(res.flag==1){
                  //本地更新
+                 this.star_status = true;
+                 console.log(this.blog_id)
                  this.$store.commit("change_info",{
                      type:"add_star",
-                     value:res.star_blog
+                     value:this.blog_id
                  });
-                 this.star_status = true;
                  //消息提示
             this.$notify({
           title: '收藏成功',
@@ -79,11 +79,11 @@ export default {
                 var res = JSON.parse(response.bodyText);
             if(res.flag==1){
                  //本地更新
-                 this.$store.commit("change_info",{
-                     type:"del_star",
-                     value:res.star_blog
-                 });
                  this.star_status = false;
+                  this.$store.commit("change_info",{
+                     "type":"del_star",
+                     "value":this.blog_id
+                 });
                  //消息提示
             this.$notify({
           title: '取消收藏成功',
@@ -103,10 +103,6 @@ export default {
                 var res = JSON.parse(response.bodyText);
             if(res.flag==1){
                  //本地更新
-                 this.$store.commit("set_document",{
-                     type:"del_draft",
-                     value:res.draft_blog
-                 });
                  this.check_draft = false;
                  //消息提示
             this.$notify({
@@ -140,7 +136,6 @@ export default {
          }
          //检测是否为草稿
          var check = this.$store.state.show_document[this.index_id].show_status;
-         
          if(check==3){
              this.check_draft = true;
          }else{

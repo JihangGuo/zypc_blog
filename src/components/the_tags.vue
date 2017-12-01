@@ -15,14 +15,6 @@
 
      <el-button type="primary" @click="go_detail($event)">查看详情<span style="display:none">{{item.blog_id}}+{{ index }}</span></el-button>
     </el-card>
-    
-
-  
-
-
-
-    
-    
     </div>
 </template>
 
