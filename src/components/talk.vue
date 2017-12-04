@@ -9,12 +9,12 @@
           <span>{{index+1}}楼</span>
           <span>{{ item.talk_date }}</span>
       </div>
-      <span v-if="item.talk_withwho" id="with_people">{{"@ "+ item.talk_withwho}}</span><span>{{ item.talk_text }}</span>
+      <span v-if="item.talk_withwho.length!==0" id="with_people" v-for="touch in item.talk_withwho">@<router-link to="/">{{ touch }}</router-link></span><span>{{ item.talk_text }}</span>
       <el-button style="float:right;margin:0.3rem" type="danger" icon="el-icon-delete" size="mini" @click="del_talk($event)"><span style="display:none;margin:0px">{{item.talk_id}}+{{index}}</span></el-button>
   </div>
 
 <el-tag
-  v-for="tag in tags"
+  v-for="tag in with_tags"
   :key="tag"
   closable
   @close="del_tag(tag)">
@@ -60,7 +60,9 @@ export default {
       index: this.$route.params.index_id,
       dialogVisible: false,
       get_del: "",
-      with_tags: []
+      with_tags: [],
+      real_tags:[],
+      name_tags:[]
     };
   },
   methods: {
@@ -120,9 +122,19 @@ export default {
       this.get_del = event.currentTarget.childNodes[2].childNodes[0].innerText;
     },
     the_qq(talk_user,talk_name) {
-        var the_talk = "@"+ " "+ talk_name;
-        this.tags.push(the_talk);
-
+        var the_talk = talk_name;
+        if(this.with_tags.indexOf(the_talk) == -1 ){  
+            this.with_tags.push(the_talk);
+            this.real_tags.push(talk_user);
+            this.name_tags.push(talk_name);
+        }else{
+        this.$message({
+              message: "已经@过啦",
+              type: "success"
+            });
+        }
+       
+      
 
     },
     the_touch() {},
@@ -134,7 +146,7 @@ export default {
         blog_id: this.$route.params.blog_id,
         text: get_talk,
         user_id: this.$store.state.log_id,
-        talk_withwho: this.with_tags
+        talk_withwho: this.real_tags
       };
       this.$http
         .post("http://localhost:8000/api/talk", JSON.stringify(send_info))
@@ -142,13 +154,15 @@ export default {
           response => {
             var get_res = JSON.parse(response.bodyText);
             //对本地图像进行获取处理 进行展现
+            var get_with = this.name_tags;
             var get_res_p = {
               talk_pic: this.$store.state.alldocument.user_pic,
               talk_name: this.$store.state.alldocument.user_name,
               talk_text: get_res.talk_text,
               talk_date: get_res.talk_date,
               talk_id: get_res.talk_id,
-              talk_user: get_res.talk_user
+              talk_user: get_res.talk_user,
+              talk_withwho:get_with
             };
             this.talk_main.push(get_res_p);
             //增加评论内容
@@ -156,7 +170,9 @@ export default {
               message: "发表成功",
               type: "success"
             });
-
+            this.name_tags=[];
+             this.with_tags=[];
+            this.real_tags=[];
             this.talk_text = "";
           },
           response => {

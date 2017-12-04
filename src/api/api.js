@@ -584,9 +584,6 @@ app.post('/api/talk', getjson, function (req, res) {
     var connect_db = async () => {
       if (type == 0) {
         //发表评论
-        if (talk_withwho.length==0) {
-          talk_withwho = false;
-        }
         var creat_talk = {
           talk_id: uuid(),
           blog_id: blog_id,
@@ -607,19 +604,41 @@ app.post('/api/talk', getjson, function (req, res) {
         var req_talk = await db.collection("blog_text").find({ "blog_id": blog_id }, { "talk": 1, "_id": 0 }).toArray();
         //获取所有评论人员信息
         var get_result = [];
-        for (var i = 0; i < req_talk.length; i++)
+       
+        for (var i = 0; i < req_talk[0].talk.length; i++)
         {
-          var get_info = await db.collection("user").find({ "_id": ObjectId(req_talk[i].talk[0].talk_user) }, { "_id": 0, "user_name": 1, "user_pic": 1 }).toArray();
+          console.log(i);
+          var get_info = await db.collection("user").find({ "_id": ObjectId(req_talk[0].talk[i].talk_user) }, { "_id": 0, "user_name": 1, "user_pic": 1 }).toArray();
+          console.log("ok" + req_talk[0].talk[i].talk_withwho.length);         
+          if (req_talk[0].talk[i].talk_withwho.length == 0) {
+            get_result.push({
+              blog_id: req_talk[0].talk[i].blog_id,
+              talk_date: req_talk[0].talk[i].talk_date,
+              talk_id: req_talk[0].talk[i].talk_id,
+              talk_text: req_talk[0].talk[i].talk_text,
+              talk_name: get_info[0].user_name,
+              talk_pic: get_info[0].user_pic,
+              talk_withwho: []
+            });
+          } else {
+            for (var a = 0; a < req_talk[0].talk[i].talk_withwho.length; a++) {
+            var get_with = await db.collection("user").find({ "_id": ObjectId(req_talk[0].talk[i].talk_withwho[a]) }, {"_id":0,"user_name":1}).toArray();
+            console.log(a);
+            get_result.push({
+                                  blog_id: req_talk[0].talk[i].blog_id,
+                                  talk_date: req_talk[0].talk[i].talk_date,
+                                  talk_id: req_talk[0].talk[i].talk_id,
+                                  talk_text: req_talk[0].talk[i].talk_text,
+                                  talk_name:get_info[0].user_name,
+                                  talk_pic:get_info[0].user_pic,
+                                  talk_withwho: req_talk[0].talk[i].talk_withwho,
+                                  talk_withname: get_with[a].user_name
+                                });
+          }
+          }
           
-          get_result.push({
-            blog_id: req_talk[i].talk[0].blog_id,
-            talk_date: req_talk[i].talk[0].talk_date,
-            talk_id: req_talk[i].talk[0].talk_id,
-            talk_text: req_talk[i].talk[0].talk_text,
-            talk_name:get_info[0].user_name,
-              talk_pic:get_info[0].user_pic,
-            talk_withwho: req_talk[i].talk[0].talk_withwho,
-          });
+          
+         
         }  
         res.send(JSON.stringify(get_result));
       }else if (type == 2) {
