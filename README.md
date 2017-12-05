@@ -58,7 +58,13 @@
 12.  oauth连接登入(登入密码的设置)   上传图片     大厅与客人浏览
 
 __13.__ 一定注意mongodb的_id的object类型 查询的时候用到_id很坑的 
+
 14. JSON对循环引用对象的问题：不能够字符化，可以使用node内置的util模块的util.inspec()
+
+15. __惨痛的教训！！！__:新老数据库对比 
+![新数据库](http://oqi1qtyq6.bkt.clouddn.com/%E7%BE%A4%E5%8D%9A%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E5%BA%93%E7%BB%93%E6%9E%84.png)
+![老数据库](http://oqi1qtyq6.bkt.clouddn.com/%E7%BE%A4%E5%8D%9A%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E5%BA%93%E7%BB%93%E6%9E%84%EF%BC%88%E5%A4%87%E4%BB%BD%EF%BC%89.png)
+
 
 ## Build Setup
 

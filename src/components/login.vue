@@ -19,6 +19,7 @@
             <el-button type="primary"><router-link to="/signin">没有账号|注册</router-link></el-button>
           </el-form-item>
         </el-form>
+         <el-button type="success" @click="go_oauth">智邮社区登录</el-button>
       </el-main>
       <el-footer>Footer</el-footer>
     </el-container>
@@ -66,6 +67,9 @@
       }
     },
     methods: {
+      go_aouth(){
+        window.location.href='http://127.0.0.1:8000/api/oauth';
+      },
       input_pass(){
         this.check_flag = true;
       },

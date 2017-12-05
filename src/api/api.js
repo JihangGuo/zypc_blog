@@ -1,5 +1,6 @@
 
 //引入依赖模块
+var OAuth2 = require('oauth').OAuth2;
 var fs = require('fs');
 var express = require('express');
 var app = express();
@@ -604,7 +605,6 @@ app.post('/api/talk', getjson, function (req, res) {
         var req_talk = await db.collection("blog_text").find({ "blog_id": blog_id }, { "talk": 1, "_id": 0 }).toArray();
         //获取所有评论人员信息
         var get_result = [];
-       
         for (var i = 0; i < req_talk[0].talk.length; i++)
         {
           console.log(i);
@@ -636,9 +636,6 @@ app.post('/api/talk', getjson, function (req, res) {
                                 });
           }
           }
-          
-          
-         
         }  
         res.send(JSON.stringify(get_result));
       }else if (type == 2) {
@@ -751,9 +748,27 @@ app.post('/api/setting', function (req, res) {
 });
 
 
+var clientid = "8f4afb51d5cf5f1000f1afab96bf38904ce5131ffcaa51a41e5105719b30b907";
+  var secret = "e84cdc258372b3ad5bed07d3fa2274d57fef8803f591c6396bf29f937d67b505";
+  var oauth = new OAuth2(
+	clientid,
+	secret,
+	'https://zypc.xupt.edu.cn/',
+  null, 'oauth/token', null);
 //oauth验证登录
-app.post('/oauth', function (req, res) {
-
+app.get('/api/oauth', function (req, res) {
+  console.log("开始oauth");
+  oauth.getOAuthAccessToken("123", {'grant_type':'authorization_code','redirect_uri':'https://zypc.xupt.edu.cn'}, function(e, access_token) {
+				console.log("Permitting access from"+access_token);
+				console.log("the_key"+access_token+e)
+				if(e != null|| access_token == undefined) {
+          console.log("失败");
+				} else {
+					oauth.get('https://zypc.xupt.edu.cn/oauth/userinfo', access_token, function(e, data) {
+						console.log("成功"+data);
+					});
+				}
+			});
   res.send('ok');
 })
 
