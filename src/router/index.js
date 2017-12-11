@@ -16,12 +16,14 @@ import detail from '../components/detail.vue'
 import collection from '../components/collection.vue'
 import recovery from '../components/recovery'
 import talk from '../components/talk.vue'
+import main from '../components/main.vue'
+import index from '../components/index.vue'
 
 Vue.use(Router);
 
 const routes = [
   { path: '/', redirect: 'login' },
-  { path: '/index', redirect: 'login' },
+  { path: '/index', component: index },
   { path: '/login', component: login },
   { path: '/signin', component: signin },
   {

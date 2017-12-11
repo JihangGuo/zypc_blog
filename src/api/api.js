@@ -621,20 +621,24 @@ app.post('/api/talk', getjson, function (req, res) {
               talk_withwho: []
             });
           } else {
+             var merge_talk = [];
             for (var a = 0; a < req_talk[0].talk[i].talk_withwho.length; a++) {
-            var get_with = await db.collection("user").find({ "_id": ObjectId(req_talk[0].talk[i].talk_withwho[a]) }, {"_id":0,"user_name":1}).toArray();
-            console.log(a);
-            get_result.push({
+              var get_with = await db.collection("user").find({ "_id": ObjectId(req_talk[0].talk[i].talk_withwho[a]) }, { "_id": 0, "user_name": 1 }).toArray();
+              merge_talk.push({
+                                    user_id: req_talk[0].talk[i].talk_withwho[a],
+                                    user_name: get_with[a].user_name
+                                  });
+            }
+           get_result.push({
                                   blog_id: req_talk[0].talk[i].blog_id,
                                   talk_date: req_talk[0].talk[i].talk_date,
                                   talk_id: req_talk[0].talk[i].talk_id,
                                   talk_text: req_talk[0].talk[i].talk_text,
                                   talk_name:get_info[0].user_name,
                                   talk_pic:get_info[0].user_pic,
-                                  talk_withwho: req_talk[0].talk[i].talk_withwho,
-                                  talk_withname: get_with[a].user_name
+                                  talk_withwho: merge_talk
                                 });
-          }
+            
           }
         }  
         res.send(JSON.stringify(get_result));
@@ -749,7 +753,7 @@ app.post('/api/setting', function (req, res) {
 
 
 var clientid = "8f4afb51d5cf5f1000f1afab96bf38904ce5131ffcaa51a41e5105719b30b907";
-  var secret = "e84cdc258372b3ad5bed07d3fa2274d57fef8803f591c6396bf29f937d67b505";
+var secret = "e84cdc258372b3ad5bed07d3fa2274d57fef8803f591c6396bf29f937d67b505";
   var oauth = new OAuth2(
 	clientid,
 	secret,

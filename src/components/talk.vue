@@ -9,7 +9,7 @@
           <span>{{index+1}}楼</span>
           <span>{{ item.talk_date }}</span>
       </div>
-      <span v-if="item.talk_withwho.length!==0" id="with_people" v-for="touch in item.talk_withwho">@<router-link to="/">{{ touch }}</router-link></span><span>{{ item.talk_text }}</span>
+      <span v-if="item.talk_withwho.length!==0" id="with_people" v-for="touch in item.talk_withwho">@<router-link :to="{path:'/api/find_user/'+touch.user_id}">{{ touch.user_name }}</router-link></span><span>{{ item.talk_text }}</span>
       <el-button style="float:right;margin:0.3rem" type="danger" icon="el-icon-delete" size="mini" @click="del_talk($event)"><span style="display:none;margin:0px">{{item.talk_id}}+{{index}}</span></el-button>
   </div>
 
@@ -170,15 +170,15 @@ export default {
               message: "发表成功",
               type: "success"
             });
-            this.name_tags=[];
-             this.with_tags=[];
-            this.real_tags=[];
-            this.talk_text = "";
           },
           response => {
             alert("网络连接出错");
           }
         );
+        this.name_tags=[];
+             this.with_tags=[];
+            this.real_tags=[];
+            this.talk_text = "";
     }
   },
 
