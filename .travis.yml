@@ -6,7 +6,6 @@ install:
     - npm install
 
 script: 
-    -   npm run dev
     -   pm2 start ./api/api.js
 
 services:
