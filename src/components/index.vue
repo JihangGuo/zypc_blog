@@ -1,7 +1,11 @@
 <template>
     <div id="index">
         <el-container>
-            <el-header>Header</el-header>
+            <el-header>
+                <el-input placeholder="请输入内容" v-model="find_info">
+                <el-button slot="append" icon="el-icon-search"></el-button>
+                </el-input>
+            </el-header>
             <el-main>
                 <el-row>
                     <el-col :span="22" :offset="1">
@@ -15,16 +19,16 @@
                                     </el-tabs>
                             </el-col>
                             <el-col :span="8" style="">
+                                <div>
+                                    <div>Linux</div>
+                                </div>
                                     <div>1</div>
                                     <div>2</div>
                                     <div>3</div>
                                     <div>4</div>
                                     <div>5</div>
-                                    <div>6</div>
-                                    <div>7</div>
-                                    <div>8</div>
                                 <div>
-                                    
+
                                 </div>
                             </el-col>
                         </el-row>
@@ -40,12 +44,13 @@
 export default {
     data() {
       return {
-        activeName: 'second'
+        activeName: 'second',
+        find_info:''
       };
     },
     methods: {
       handleClick(tab, event) {
-        console.log(tab, event);
+        console.log(tab.name)
       }
     }
   };
@@ -54,7 +59,7 @@ export default {
 <style>
 body {
     margin: 0;
-     background-color: #E9EEF3;
+     background-color: #eaeaea;
 }
 
 .el-header, .el-footer {
@@ -64,7 +69,7 @@ body {
   }
 
   .el-main {
-    background-color: #E9EEF3;
+    background-color: #eaeaea;
     color: #333;
     text-align: center;
     margin-top: 1rem;
