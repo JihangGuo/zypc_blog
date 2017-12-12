@@ -1,3 +1,13 @@
 langyage:   node_js
 node_js:
-    -   'node'
+    -   '8.9'
+
+install:
+    - npm install
+
+script: 
+    -   npm run dev
+    -   pm2 start ./api/api.js
+
+services:
+    mongodb
