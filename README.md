@@ -1,4 +1,4 @@
-# zypc_blog
+# zypc_blog ![项目测试](https://travis-ci.org/JihangGuo/zypc_blog.svg?branch=master)
 
 
 ## 使用框架及组件
